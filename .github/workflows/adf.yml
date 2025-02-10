@@ -121,21 +121,21 @@ jobs:
         with:
           name: ExportedArmTemplate
 
-      # - name: data-factory-deploy
-      #   uses: Azure/data-factory-deploy-action@v1.2.0
-      #   with:
-      #     resourceGroupName: ${{ env.rg-name}}
-      #     dataFactoryName: ${{ env.target-adf}}
-      #     armTemplateFile: ARMTemplateForFactory.json
-      #     armTemplateParametersFile: ARMTemplateParametersForFactory.json
-      # deploymentMode: Incremental
-      - name: Deploy ARM Template with PowerShell
-        run: |
-          pwsh -Command "
-            Connect-AzAccount -Identity
-            New-AzResourceGroupDeployment `
-              -ResourceGroupName $env:rg_name `
-              -TemplateFile ARMTemplateForFactory.json `
-              -TemplateParameterFile ARMTemplateParametersForFactory.json `
-              -Mode Incremental"
+      - name: data-factory-deploy
+        uses: Azure/data-factory-deploy-action@v1.2.0
+        with:
+          resourceGroupName: ${{ env.rg-name}}
+          dataFactoryName: ${{ env.target-adf}}
+          armTemplateFile: ARMTemplateForFactory.json
+          armTemplateParametersFile: ARMTemplateParametersForFactory.json
+
+      # - name: Deploy ARM Template with PowerShell
+      #   run: |
+      #     pwsh -Command "
+      #       Connect-AzAccount -Identity
+      #       New-AzResourceGroupDeployment `
+      #         -ResourceGroupName $env:rg_name `
+      #         -TemplateFile ARMTemplateForFactory.json `
+      #         -TemplateParameterFile ARMTemplateParametersForFactory.json `
+      #         -Mode Incremental"
   
