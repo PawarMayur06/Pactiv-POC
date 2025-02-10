@@ -1,0 +1,17 @@
+{
+	"name": "mayur-dev-adf-poc",
+	"properties": {
+		"globalParameters": {
+			"name": {
+				"type": "string",
+				"value": "Mayurr"
+			}
+		}
+	},
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "c8bf1f75-9daf-4280-91a5-9e29d3cec310",
+		"tenantId": "e4e34038-ea1f-4882-b6e8-ccd776459ca0"
+	}
+}
