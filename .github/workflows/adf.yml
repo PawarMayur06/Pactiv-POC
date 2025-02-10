@@ -35,9 +35,15 @@ jobs:
           
 ######################################## CHECKOUT THE CODE FORMT HE REPO USING PAT ########################################################################
 
-      - uses: actions/checkout@v3
+      - name: Set up SSH key for GitHub Actions
+        uses: webfactory/ssh-agent@v0.5.3
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+          ssh-private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.PRIVATE_KEY }}
 
 ################################################ SETTING UP THE NODE AND NODE CACHE #####################################################################
           
