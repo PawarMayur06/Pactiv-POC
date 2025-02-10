@@ -1,5 +1,13 @@
 {
 	"name": "mayur-dev-adf-poc",
+	"properties": {
+		"globalParameters": {
+			"name": {
+				"type": "string",
+				"value": "Mayurr"
+			}
+		}
+	},
 	"location": "centralindia",
 	"identity": {
 		"type": "SystemAssigned",
