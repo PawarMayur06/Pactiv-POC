@@ -65,17 +65,17 @@ jobs:
           
       - name: Clean install dependencies
         run: npm ci
-        working-directory: ${{github.workspace}}/adf
+        working-directory: ${{github.workspace}}/ADF
 
 ########################################### VALIDATING AND DEPLOYING THE ARM TEMPLATES ##############################################################
         
       - name: Validate
         run: npm run build validate ${{github.workspace}}/ /subscriptions/${{ secrets.SUBSCRIPTION_ID}}/resourceGroups/${{ env.rg-name}}/providers/Microsoft.DataFactory/factories/${{ env.adf-name}}
-        working-directory: ${{github.workspace}}/adf
+        working-directory: ${{github.workspace}}/ADF
         
       - name: Validate and Generate ARM template
         run: npm run build export ${{github.workspace}}/ /subscriptions/${{ secrets.SUBSCRIPTION_ID}}/resourceGroups/${{ env.rg-name}}/providers/Microsoft.DataFactory/factories/${{ env.adf-name}} "ExportedArmTemplate"
-        working-directory: ${{github.workspace}}/adf
+        working-directory: ${{github.workspace}}/ADF
 
 ############################################## PUSING CHANGES TO REPO AND UPLOADING ARTIFACTS ########################################################
         
@@ -83,7 +83,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          find ${{github.workspace}}/adf -name "*.json" -o -name "*.ps1" | while read file; do git add "$file"; done
+          find ${{github.workspace}}/ADF -name "*.json" -o -name "*.ps1" | while read file; do git add "$file"; done
           git commit -m "Update ARM templates [skip ci]" || echo "No changes to commit"
           git push origin main || echo "No changes to push"
         env:
@@ -93,7 +93,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ExportedArmTemplate
-          path: ${{github.workspace}}/adf/ExportedArmTemplate/      
+          path: ${{github.workspace}}/ADF/ExportedArmTemplate/      
 
 ##################################################################### RELEASE STAGE #####################################################################
   
