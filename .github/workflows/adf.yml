@@ -1,0 +1,122 @@
+name: Deployment from UAT-ADF to PROD-ADF
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  rg-name: "mayurr-rg"
+  adf-name: "mayur-dev-adf-poc"
+  target-adf: "mayur-prod-adf-poc"
+
+permissions:
+  id-token: write
+  contents: write
+  actions: read
+jobs:
+
+############################################################# BUILD STAGE ###############################################################################
+
+  build:
+    runs-on: ubuntu-24.04
+    environment: DEV
+    steps:
+    
+  ##################################################Login to Azure and set the Subscription ##########################################################
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS}}
+ 
+      - name: Set Azure subscription
+        run: |
+          az account set --subscription "${{ secrets.SUBSCRIPTION_ID}}"
+          
+######################################## CHECKOUT THE CODE FORMT HE REPO USING PAT ########################################################################
+
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+################################################ SETTING UP THE NODE AND NODE CACHE #####################################################################
+          
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+          
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+          
+      - name: Clean install dependencies
+        run: npm ci
+        working-directory: ${{github.workspace}}/adf
+
+########################################### VALIDATING AND DEPLOYING THE ARM TEMPLATES ##############################################################
+        
+      - name: Validate
+        run: npm run build validate ${{github.workspace}}/ /subscriptions/${{ secrets.SUBSCRIPTION_ID}}/resourceGroups/${{ env.rg-name}}/providers/Microsoft.DataFactory/factories/${{ env.adf-name}}
+        working-directory: ${{github.workspace}}/adf
+        
+      - name: Validate and Generate ARM template
+        run: npm run build export ${{github.workspace}}/ /subscriptions/${{ secrets.SUBSCRIPTION_ID}}/resourceGroups/${{ env.rg-name}}/providers/Microsoft.DataFactory/factories/${{ env.adf-name}} "ExportedArmTemplate"
+        working-directory: ${{github.workspace}}/adf
+
+############################################## PUSING CHANGES TO REPO AND UPLOADING ARTIFACTS ########################################################
+        
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          find ${{github.workspace}}/adf -name "*.json" -o -name "*.ps1" | while read file; do git add "$file"; done
+          git commit -m "Update ARM templates [skip ci]" || echo "No changes to commit"
+          git push origin main || echo "No changes to push"
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+      
+      - name: Upload Exported ARM Template
+        uses: actions/upload-artifact@v4
+        with:
+          name: ExportedArmTemplate
+          path: ${{github.workspace}}/adf/ExportedArmTemplate/      
+
+##################################################################### RELEASE STAGE #####################################################################
+  
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment: PROD
+    steps:
+
+#########################################################  LOGIN TO AZURE ############################################################################
+
+      - name: Login via Az module
+        uses: Azure/login@v2.2.0
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+
+#################################################### DOWNLOADING AND DEPLOYING THE ARTIFACTS ######################################################
+        
+      - name: Download a Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ExportedArmTemplate
+
+      - name: data-factory-deploy
+        uses: Azure/data-factory-deploy-action@v1.2.0
+        with:
+          resourceGroupName: ${{ env.rg-name}}
+          dataFactoryName: ${{ env.target-adf}}
+          armTemplateFile: ARMTemplateForFactory.json
+          armTemplateParametersFile: ARMTemplateParametersForFactory.json
+          deploymentMode: Incremental
