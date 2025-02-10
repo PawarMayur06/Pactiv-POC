@@ -70,12 +70,12 @@ jobs:
 ########################################### VALIDATING AND DEPLOYING THE ARM TEMPLATES ##############################################################
         
       - name: Validate
-        run: npm run build validate ${{github.workspace}}/ /subscriptions/${{ secrets.SUBSCRIPTION_ID}}/resourceGroups/${{ env.rg-name}}/providers/Microsoft.DataFactory/factories/${{ env.adf-name}}
-        working-directory: ${{github.workspace}}/ADF
+        run: npm run build validate ./ADF /subscriptions/${{ secrets.SUBSCRIPTION_ID}}/resourceGroups/${{ env.rg-name}}/providers/Microsoft.DataFactory/factories/${{ env.adf-name}}
+        working-directory: ${{github.workspace}}
         
       - name: Validate and Generate ARM template
-        run: npm run build export ${{github.workspace}}/ /subscriptions/${{ secrets.SUBSCRIPTION_ID}}/resourceGroups/${{ env.rg-name}}/providers/Microsoft.DataFactory/factories/${{ env.adf-name}} "ExportedArmTemplate"
-        working-directory: ${{github.workspace}}/ADF
+        run: npm run build export ./ADF /subscriptions/${{ secrets.SUBSCRIPTION_ID}}/resourceGroups/${{ env.rg-name}}/providers/Microsoft.DataFactory/factories/${{ env.adf-name}} "ExportedArmTemplate"
+        working-directory: ${{github.workspace}}
 
 ############################################## PUSING CHANGES TO REPO AND UPLOADING ARTIFACTS ########################################################
         
