@@ -105,11 +105,14 @@ jobs:
 
 #########################################################  LOGIN TO AZURE ############################################################################
 
-      - name: Login via Az module
-        uses: Azure/login@v2.2.0
+      - name: Login to Azure
+        uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          enable-AzPSSession: true
+          creds: ${{ secrets.AZURE_CREDENTIALS}}
+
+      - name: Set Azure subscription
+        run: |
+          az account set --subscription "${{ secrets.SUBSCRIPTION_ID}}"
 
 #################################################### DOWNLOADING AND DEPLOYING THE ARTIFACTS ######################################################
         
