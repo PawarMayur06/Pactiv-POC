@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "value": "mayur-dev-adf-poc"
+        },
+        "AzureBlobStorage1_connectionString": {
+            "value": ""
+        },
+        "Warehouse1_servicePrincipalCredential": {
+            "value": ""
+        },
+        "Warehouse1_properties_typeProperties_endpoint": {
+            "value": "hbaohza75kbernxiztlxmrm4ua-mujb4nlr6meunesnxwuhi6nxka.datawarehouse.fabric.microsoft.com"
+        },
+        "Warehouse1_properties_typeProperties_tenant": {
+            "value": "e4e34038-ea1f-4882-b6e8-ccd776459ca0"
+        },
+        "Warehouse1_properties_typeProperties_servicePrincipalId": {
+            "value": "246cfd43-77c5-4c63-8f77-d6a19a3876ec"
+        }
+    }
+}

@@ -1,0 +1,168 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Data Factory name",
+            "defaultValue": "mayur-dev-adf-poc"
+        },
+        "AzureBlobStorage1_connectionString": {
+            "type": "secureString",
+            "metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+        },
+        "Warehouse1_servicePrincipalCredential": {
+            "type": "secureString",
+            "metadata": "Secure string for 'servicePrincipalCredential' of 'Warehouse1'"
+        },
+        "Warehouse1_properties_typeProperties_endpoint": {
+            "type": "string",
+            "defaultValue": "hbaohza75kbernxiztlxmrm4ua-mujb4nlr6meunesnxwuhi6nxka.datawarehouse.fabric.microsoft.com"
+        },
+        "Warehouse1_properties_typeProperties_tenant": {
+            "type": "string",
+            "defaultValue": "e4e34038-ea1f-4882-b6e8-ccd776459ca0"
+        },
+        "Warehouse1_properties_typeProperties_servicePrincipalId": {
+            "type": "string",
+            "defaultValue": "246cfd43-77c5-4c63-8f77-d6a19a3876ec"
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('factoryName'), '/pipeline1')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "activities": [
+                    {
+                        "name": "Wait1",
+                        "type": "Wait",
+                        "dependsOn": [],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "waitTimeInSeconds": 1
+                        }
+                    }
+                ],
+                "policy": {
+                    "elapsedTimeMetric": {}
+                },
+                "annotations": []
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureBlobStorage",
+                "typeProperties": {
+                    "connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/Warehouse1')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "Warehouse",
+                "typeProperties": {
+                    "endpoint": "[parameters('Warehouse1_properties_typeProperties_endpoint')]",
+                    "artifactId": "c0f5a0ab-2255-4929-8607-b65c4e64de7a",
+                    "workspaceId": "351e1265-f371-4609-924d-bda87479b750",
+                    "tenant": "[parameters('Warehouse1_properties_typeProperties_tenant')]",
+                    "servicePrincipalCredentialType": "ServicePrincipalKey",
+                    "servicePrincipalId": "[parameters('Warehouse1_properties_typeProperties_servicePrincipalId')]",
+                    "servicePrincipalCredential": {
+                        "type": "SecureString",
+                        "value": "[parameters('Warehouse1_servicePrincipalCredential')]"
+                    }
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/Json1')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "AzureBlobStorage1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "Json",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "package.json",
+                        "container": "test"
+                    }
+                },
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "scripts": {
+                            "type": "object",
+                            "properties": {
+                                "build": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "dependencies": {
+                            "type": "object",
+                            "properties": {
+                                "@microsoft/azure-data-factory-utilities": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/trigger1')]",
+            "type": "Microsoft.DataFactory/factories/triggers",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "runtimeState": "Started",
+                "pipelines": [
+                    {
+                        "pipelineReference": {
+                            "referenceName": "pipeline1",
+                            "type": "PipelineReference"
+                        },
+                        "parameters": {}
+                    }
+                ],
+                "type": "ScheduleTrigger",
+                "typeProperties": {
+                    "recurrence": {
+                        "frequency": "Minute",
+                        "interval": 15,
+                        "startTime": "2025-02-10T11:27:00",
+                        "timeZone": "India Standard Time"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/pipelines/pipeline1')]"
+            ]
+        }
+    ]
+}
